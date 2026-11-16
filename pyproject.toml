@@ -1,0 +1,34 @@
+[project]
+name = "hrum"
+version = "0.1.0"
+description = "HRUM - HR Unified Monitoring & Intelligence"
+requires-python = ">=3.10"
+dependencies = [
+  "pandas", "pyarrow", "numpy", "requests", "pyyaml", "python-dotenv",
+  "duckdb>=1.1",
+  "dbt-duckdb",
+  "sqlglot",            # SQL validation in guardrails
+  "jsonschema",         # tool-argument validation
+  "openai",             # OpenAI-compatible client for vLLM
+]
+
+[project.optional-dependencies]
+ml = ["scikit-learn", "xgboost", "shap", "mlflow"]
+rag = ["sentence-transformers"]
+agent = ["mcp==2.3.0", "pyjwt[crypto]", "langfuse", "streamlit", "plotly", "anthropic"]
+bigquery = ["google-cloud-bigquery", "db-dtypes", "dbt-bigquery"]
+dev = ["pytest", "ruff"]
+# vLLM is installed in its own venv (it pins torch): see infra/local_server/README.md
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["common*", "agent*", "ingestion*", "ml*", "evals*", "infra*"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
