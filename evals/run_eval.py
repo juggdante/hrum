@@ -49,6 +49,26 @@ def served_model(provider: str) -> dict[str, Any]:
         return {"model": p.get("model")}
 
 
+def preflight_error(base_url: str | None, api_key: str = "") -> str | None:
+    """Why the model server cannot serve an eval, or None when it can. Cloud providers (no base_url) are skipped.
+
+    Without this check an unreachable server turns every question into an `error` and the report shows 0/N.
+    """
+    if not base_url:
+        return None
+    url = f"{base_url.rstrip('/')}/models"
+    try:
+        r = requests.get(url, headers={"Authorization": f"Bearer {api_key}"}, timeout=5)
+    except requests.RequestException:
+        return f"model server not reachable at {base_url}: start it with `make serve` (status: " \
+               "`.venv/bin/python -m infra.local_server.vllm_server status`)"
+    if r.status_code == 401:
+        return "the model server rejected QWEN_API_KEY: .env does not match the key the server was started with"
+    if r.status_code != 200:
+        return f"model server answered HTTP {r.status_code} at {url}"
+    return None
+
+
 def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9.]+", "-", text.split("/")[-1].lower()).strip("-")
 
@@ -204,6 +224,10 @@ def main() -> None:
         return
 
     provider = args.provider or load_config("llm")["default"]
+    p = load_config("llm")["providers"][provider]
+    problem = preflight_error(p.get("base_url"), p.get("api_key", ""))
+    if problem:
+        raise SystemExit(f"Not running the eval: {problem}")
     served = served_model(provider)
     label = args.label or slug(served["model"] or provider)
     items = load_questions()
