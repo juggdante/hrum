@@ -97,3 +97,32 @@ def test_must_include_can_be_met_by_system_caveat():
            "caveats": ["Uses SYNTHETIC HRIS fields: demonstrates capability, not a real finding about SF."]}
     assert grade(item, res, Gold(numbers=[0.1456]))["passed"]
     assert not grade(item, {**res, "caveats": []}, Gold(numbers=[0.1456]))["passed"]
+
+
+def test_preflight_reports_unreachable_server_and_wrong_key():
+    import http.server
+    import threading
+
+    from evals.run_eval import preflight_error
+
+    assert preflight_error(None) is None                                   # cloud provider: nothing to check
+    assert "make serve" in preflight_error("http://127.0.0.1:9/v1")       # nothing listening
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            ok = self.headers.get("Authorization") == "Bearer right"
+            self.send_response(200 if ok else 401)
+            self.end_headers()
+            self.wfile.write(b'{"data": [{"id": "qwen"}]}' if ok else b"{}")
+
+        def log_message(self, *a):
+            pass
+
+    srv = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    base = f"http://127.0.0.1:{srv.server_address[1]}/v1"
+    try:
+        assert preflight_error(base, "right") is None
+        assert "QWEN_API_KEY" in preflight_error(base, "wrong")
+    finally:
+        srv.shutdown()
