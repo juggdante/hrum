@@ -28,7 +28,7 @@ VENV_PY = ROOT / ".venv" / "bin" / "python"
 OK, WARN, FAIL, SKIP, INFO = "OK", "WARN", "FAIL", "SKIP", "INFO"
 MCP_PORT = 8765
 # set by main(): cpu (skip GPU checks), demo (services required + smoke question), app_port
-OPTS = argparse.Namespace(cpu=False, demo=False, app_port=8501, smoke=True)
+OPTS = argparse.Namespace(cpu=False, demo=False, app_port=None, smoke=True)
 
 
 @dataclass
@@ -248,6 +248,48 @@ def langfuse_containers() -> tuple[int, int, list[str]] | None:
     return len(rows) - len(bad), len(rows), bad
 
 
+_SS_LINE = re.compile(r":(\d+)\s+\S+\s+users:\(\(\"([^\"]+)\",pid=(\d+)")
+
+
+def listeners() -> dict[int, list[int]]:
+    """port -> pids listening on it. `ss` shows pids only for processes this user may inspect."""
+    rc, out = _run(["ss", "-ltnpH"])
+    return parse_listeners(out if rc == 0 else "")
+
+
+def parse_listeners(text: str) -> dict[int, list[int]]:
+    found: dict[int, list[int]] = {}
+    for m in _SS_LINE.finditer(text):
+        found.setdefault(int(m.group(1)), []).append(int(m.group(3)))
+    return found
+
+
+def is_hrum_app(pid: int, root: Path = ROOT) -> bool:
+    """True when the process runs this repository's Streamlit app (agent/app/main.py, started from `root`)."""
+    try:
+        cmd = (Path("/proc") / str(pid) / "cmdline").read_bytes().replace(b"\0", b" ").decode(errors="ignore")
+        cwd = Path(os.readlink(Path("/proc") / str(pid) / "cwd")).resolve()
+    except OSError:
+        return False
+    return "streamlit" in cmd and "agent/app/main.py" in cmd and (cwd == root.resolve() or str(root) in cmd)
+
+
+def hrum_app_ports(found: dict[int, list[int]] | None = None) -> list[int]:
+    found = listeners() if found is None else found
+    return sorted(port for port, pids in found.items() if any(is_hrum_app(pid) for pid in pids))
+
+
+def resolve_app_port(explicit: int | None, env_port: str, detected: list[int]) -> tuple[int, str]:
+    """(port, how it was chosen): --app-port, else APP_PORT in .env, else a detected HRUM app, else 8501."""
+    if explicit:
+        return explicit, "--app-port"
+    if env_port.strip().isdigit():
+        return int(env_port), "APP_PORT in .env"
+    if detected:
+        return detected[0], "detected HRUM process"
+    return 8501, "default"
+
+
 def check_services(cpu: bool) -> list[Result]:
     out = []
     if not VENV_PY.exists():
@@ -290,17 +332,28 @@ print(json.dumps({"health": h, "root": root}))
     else:
         out.append(Result(INFO, "Langfuse", "keys not set: tracing off (optional)", "infra/langfuse/README.md"))
 
-    port = OPTS.app_port
+    found = listeners()
+    detected = hrum_app_ports(found)
+    port, how = resolve_app_port(OPTS.app_port, env.get("APP_PORT", ""), detected)
+    name = f"HRUM app (port {port}, {how})"
+    required = FAIL if OPTS.demo else INFO
     ok, body = http_ok(f"http://127.0.0.1:{port}/_stcore/health")
-    if ok and body == "ok":
-        out.append(Result(OK, f"HRUM app (port {port})", "Streamlit healthy"))
+    healthy = ok and body == "ok"
+    elsewhere = [p for p in detected if p != port]
+    hint = (f"HRUM is running on port {elsewhere[0]}: make demo-check APP_PORT={elsewhere[0]}" if elsewhere
+            else f"make agent APP_PORT={port}  (in its own terminal)")
+    if healthy and port in detected:
+        out.append(Result(OK, name, "Streamlit healthy, this repository's app"))
+    elif healthy and found.get(port):          # we can see the owner, and it is not this repo's app
+        out.append(Result(required, name, "a different Streamlit app is on this port (not HRUM from this repo)", hint))
+    elif healthy:                              # owner not visible (another user or a container)
+        out.append(Result(WARN, name, "a healthy Streamlit app, but its process is not visible to confirm it is HRUM",
+                          hint))
     elif _port_open(port):
-        out.append(Result(FAIL if OPTS.demo else INFO, f"HRUM app (port {port})",
-                          "port in use, but not a healthy Streamlit app (another program?)",
+        out.append(Result(required, name, "port in use, but not a healthy Streamlit app (another program?)",
                           f"make agent APP_PORT={port + 1}  (then: make demo-check APP_PORT={port + 1})"))
     else:
-        out.append(Result(FAIL if OPTS.demo else INFO, f"HRUM app (port {port})", "not running",
-                          f"make agent APP_PORT={port}  (in its own terminal)"))
+        out.append(Result(required, name, "not running", hint))
 
     out.append(Result(OK if _port_open(MCP_PORT) else INFO, f"MCP server (port {MCP_PORT}, optional)",
                       "listening" if _port_open(MCP_PORT) else "not running", "make mcp"))
@@ -334,7 +387,8 @@ def main() -> None:
     ap.add_argument("--cpu", action="store_true", help="skip GPU / vLLM checks (laptop, CI)")
     ap.add_argument("--demo", action="store_true",
                     help="demo readiness: vLLM and the app must be up; runs one end-to-end question")
-    ap.add_argument("--app-port", type=int, default=int(read_env().get("APP_PORT", "") or 8501))
+    ap.add_argument("--app-port", type=int, default=None,
+                    help="port of the HRUM app (default: APP_PORT in .env, else a detected HRUM process, else 8501)")
     ap.add_argument("--no-smoke", action="store_true", help="with --demo: skip the end-to-end question")
     args = ap.parse_args()
     OPTS.cpu, OPTS.demo, OPTS.app_port, OPTS.smoke = args.cpu, args.demo, args.app_port, not args.no_smoke
