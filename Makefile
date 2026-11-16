@@ -46,7 +46,7 @@ gate:         ## release gate: CANDIDATE=evals/reports/x.json [BASELINE=evals/re
 doctor:       ## check prerequisites + setup state, print the next step (ARGS=--cpu on a laptop)
 	$(if $(wildcard .venv/bin/python),.venv/bin/python,python3) -m infra.doctor $(ARGS)
 demo-check:   ## before a demo: vLLM + app must be up, optional services, one end-to-end question
-	$(PY) -m infra.doctor --demo --app-port $(APP_PORT) $(ARGS)
+	$(PY) -m infra.doctor --demo $(if $(filter command line environment,$(origin APP_PORT)),--app-port $(APP_PORT)) $(ARGS)
 trace-check:  ## Langfuse connection + one masked test trace (infra/langfuse/README.md)
 	$(PY) -m agent.observability.check
 test:
