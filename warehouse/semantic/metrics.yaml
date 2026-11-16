@@ -1,0 +1,131 @@
+# HRUM semantic layer: ONE definition per metric (CLAUDE.md rule 7).
+# Used by the agent (query_metric tool), the eval gold answers and the ML features.
+# Compiled to SQL by common/semantic.py. All tables live in schema `mart`.
+
+models:
+  compensation:
+    table: mart.fct_compensation
+    alias: f
+    is_synthetic: false
+    joins:
+      - "left join mart.dim_department d using (department_code)"
+      - "left join mart.dim_job j using (job_code)"
+    default_filter: "f.is_paid"
+    dimensions:
+      fiscal_year:        {sql: f.fiscal_year, description: "Fiscal year (July-June), 2013-2026"}
+      department:         {sql: d.department, description: "City department (127)"}
+      organization_group: {sql: d.organization_group, description: "Group of departments (7)"}
+      job_family:         {sql: j.job_family, description: "Job family (60)"}
+      job:                {sql: j.job, description: "Job title (1,426)"}
+      employment_type:    {sql: f.employment_type, description: "Employment type; NULL before FY2017"}
+      is_full_time:       {sql: f.is_full_time, description: "hours >= 1,820; NULL before FY2017"}
+
+  employee_snapshot:
+    table: mart.fct_employee_snapshot
+    alias: s
+    is_synthetic: true
+    joins:
+      - "left join mart.dim_department d using (department_code)"
+      - "left join mart.dim_job j using (job_code)"
+    default_filter: "true"
+    dimensions:
+      fiscal_year:        {sql: s.fiscal_year, description: "Snapshot fiscal year (2026 only)"}
+      department:         {sql: d.department, description: "City department (REAL)"}
+      organization_group: {sql: d.organization_group, description: "Group of departments (REAL)"}
+      job_family:         {sql: j.job_family, description: "Job family (REAL)"}
+      employment_type:    {sql: s.employment_type, description: "Employment type (REAL)"}
+      level:              {sql: s.level, description: "SYNTHETIC level L1-L5"}
+      gender:             {sql: s.gender, description: "SYNTHETIC gender F/M"}
+      age_band:           {sql: s.age_band, description: "SYNTHETIC age band"}
+      location:           {sql: s.location, description: "SYNTHETIC work location"}
+      performance_rating: {sql: s.performance_rating, description: "SYNTHETIC rating 1-5"}
+      termination_reason: {sql: s.termination_reason, description: "SYNTHETIC reason (leavers only)"}
+
+metrics:
+  # ---------- REAL: compensation (fct_compensation, fiscal years, paid records) ----------
+  headcount:
+    model: compensation
+    sql: count(*)
+    format: integer
+    description: Number of paid pay records (total_salary > 0) in the fiscal year. Proxy for headcount; a person with two jobs counts twice.
+  total_compensation:
+    model: compensation
+    sql: sum(f.total_compensation)
+    format: usd
+    description: Total salary + total benefits paid (USD).
+  avg_total_compensation:
+    model: compensation
+    sql: avg(f.total_compensation)
+    format: usd
+    description: Mean total compensation per paid record (USD).
+  median_total_compensation:
+    model: compensation
+    sql: median(f.total_compensation)
+    format: usd
+    description: Median total compensation per paid record (USD). Less sensitive to outliers than the mean.
+  total_salary:
+    model: compensation
+    sql: sum(f.total_salary)
+    format: usd
+    description: Salaries + overtime + other salaries (USD).
+  total_overtime:
+    model: compensation
+    sql: sum(f.overtime)
+    format: usd
+    description: Overtime pay (USD).
+  total_benefits:
+    model: compensation
+    sql: sum(f.total_benefits)
+    format: usd
+    description: Retirement + health and dental + other benefits (USD).
+  avg_total_benefits:
+    model: compensation
+    sql: avg(f.total_benefits)
+    format: usd
+    description: Mean total benefits per paid record (USD).
+  benefits_ratio:
+    model: compensation
+    sql: sum(f.total_benefits) / nullif(sum(f.total_salary), 0)
+    format: ratio
+    description: Total benefits / total salary. 0.40 means $0.40 of benefits per $1 of salary.
+  overtime_ratio:
+    model: compensation
+    sql: sum(f.overtime) / nullif(sum(f.total_salary), 0)
+    format: ratio
+    description: Overtime / total salary.
+
+  # ---------- SYNTHETIC: workforce (fct_employee_snapshot, FY2026) ----------
+  employee_count:
+    model: employee_snapshot
+    sql: count(*)
+    format: integer
+    description: Employees in the snapshot (one row per person-key). Pay fields are real, HRIS fields synthetic.
+  turnover_rate:
+    model: employee_snapshot
+    sql: avg(case when s.is_terminated then 1.0 else 0.0 end)
+    format: percent
+    synthetic: true
+    description: SYNTHETIC. Share of employees who left during the fiscal year.
+  voluntary_turnover_rate:
+    model: employee_snapshot
+    sql: avg(case when s.is_voluntary_termination then 1.0 else 0.0 end)
+    format: percent
+    synthetic: true
+    description: SYNTHETIC. Share of employees who resigned voluntarily during the fiscal year.
+  cost_of_turnover:
+    model: employee_snapshot
+    sql: sum(case when s.is_terminated then 0.33 * s.total_salary else 0 end)
+    format: usd
+    synthetic: true
+    description: SYNTHETIC. Estimated replacement cost = 33% of annual salary of each leaver (assumption, not measured).
+  avg_tenure_years:
+    model: employee_snapshot
+    sql: avg(s.tenure_years)
+    format: number
+    synthetic: true
+    description: SYNTHETIC. Mean years of service.
+  avg_compa_ratio:
+    model: employee_snapshot
+    sql: avg(s.compa_ratio_internal)
+    format: ratio
+    description: Mean salary / median salary of the same job (internal benchmark, not market data).

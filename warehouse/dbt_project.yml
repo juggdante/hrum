@@ -1,0 +1,24 @@
+name: hrum
+version: "1.0.0"
+config-version: 2
+profile: hrum
+
+model-paths: ["models"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+target-path: target
+clean-targets: [target, dbt_packages]
+
+vars:
+  full_time_hours: 1820        # 35 h/week * 52; see docs/data_dictionary.md
+  min_group_size: 5            # mirrors configs/guardrails.yaml privacy.min_group_size
+
+models:
+  hrum:
+    staging:
+      +schema: stg
+      +materialized: view
+    marts:
+      +schema: mart
+      +materialized: table

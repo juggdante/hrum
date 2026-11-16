@@ -1,0 +1,75 @@
+version: 2
+
+models:
+  - name: fct_compensation
+    description: >
+      REAL. One row per fiscal-year pay record from SF Employee Compensation. Fiscal only.
+      hours / employment_type are NULL before FY2017.
+    columns:
+      - name: compensation_record_id
+        data_tests: [unique, not_null]
+      - name: fiscal_year
+        data_tests: [not_null]
+      - name: department_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_department'), field: department_code}
+      - name: job_code
+        data_tests:
+          - not_null
+          - relationships:
+              arguments: {to: ref('dim_job'), field: job_code}
+      - name: total_compensation
+        description: total_salary + total_benefits (USD).
+        data_tests: [not_null]
+      - name: is_full_time
+        description: hours >= var('full_time_hours') (1,820). NULL before FY2017.
+      - name: is_adjustment
+        description: Negative total compensation (refund/adjustment rows).
+      - name: is_paid
+        description: total_salary > 0. Headcount counts only paid records.
+      - name: is_synthetic
+        data_tests:
+          - accepted_values:
+              arguments: {values: [false]}
+
+  - name: dim_department
+    description: REAL. Department with its latest name and organization group.
+    columns:
+      - name: department_code
+        data_tests: [unique, not_null]
+      - name: department
+        data_tests: [not_null]
+
+  - name: dim_job
+    description: REAL. Job code with latest title and job family.
+    columns:
+      - name: job_code
+        data_tests: [unique, not_null]
+      - name: job_family
+        data_tests: [not_null]
+
+  - name: fct_employee_snapshot
+    description: >
+      MIXED (is_synthetic = true). One row per employee in the snapshot fiscal year (FY2026).
+      Department, job and pay are REAL; hire/termination dates, tenure, level, performance, gender,
+      age band and location are SYNTHETIC. Never present findings on synthetic fields as real.
+    columns:
+      - name: employee_key
+        data_tests: [unique, not_null]
+      - name: department_code
+        data_tests:
+          - relationships:
+              arguments: {to: ref('dim_department'), field: department_code}
+      - name: compa_ratio_internal
+        description: total_salary / median total_salary of the same job_code (internal benchmark, not market).
+      - name: tenure_years
+        description: SYNTHETIC. Years from hire_date to termination_date or fiscal year end.
+      - name: is_terminated
+        description: SYNTHETIC. Left during the fiscal year.
+        data_tests: [not_null]
+      - name: is_synthetic
+        data_tests:
+          - accepted_values:
+              arguments: {values: [true]}

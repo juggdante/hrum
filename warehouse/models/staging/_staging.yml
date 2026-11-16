@@ -1,0 +1,34 @@
+version: 2
+
+models:
+  - name: stg_sf_comp__compensation
+    description: Typed, renamed SF Comp rows (both year types). Employee Name hashed to employee_key.
+    columns:
+      - name: compensation_record_id
+        description: Surrogate key over the natural grain of a pay record.
+      - name: employee_key
+        description: md5 hash of the employee name. NOT a reliable cross-year person id (name collisions).
+        data_tests: [not_null]
+      - name: year_type
+        data_tests:
+          - accepted_values:
+              arguments: {values: [Fiscal, Calendar]}
+      - name: year
+        data_tests: [not_null]
+      - name: total_compensation
+        description: Source total; reconciles with total_salary + total_benefits (EDA 2026-11-11).
+        data_tests: [not_null]
+
+  - name: stg_synthetic__hris
+    description: SYNTHETIC HRIS snapshot, typed. Every row is_synthetic = true.
+    columns:
+      - name: employee_key
+        data_tests: [unique, not_null]
+      - name: performance_rating
+        data_tests:
+          - accepted_values:
+              arguments: {values: [1, 2, 3, 4, 5], quote: false}
+      - name: is_synthetic
+        data_tests:
+          - accepted_values:
+              arguments: {values: [true]}

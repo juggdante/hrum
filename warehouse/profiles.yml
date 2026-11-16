@@ -1,0 +1,7 @@
+hrum:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('HRUM_DB_PATH', '../data/hrum.duckdb') }}"
+      threads: 4
