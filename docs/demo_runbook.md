@@ -58,7 +58,8 @@ Optional Terminal 4: `make mcp` (only if you show an MCP client).
    stale: Ports tab → Stop Forwarding → forward again.
 
 **10 minutes before**
-4. `make demo-check APP_PORT=8502`. It must end with `Ready for the demo.` It checks the data, model, index, vLLM,
+4. `make demo-check` (or `make demo-check APP_PORT=8502`). Without a port it finds this repository's app by its
+   process, so another Streamlit app on 8501 is not mistaken for HRUM. It must end with `Ready for the demo.` It checks the data, model, index, vLLM,
    the app's health endpoint, Langfuse (containers and API, if configured), MCP, and runs **one real question end to
    end** (this also warms up the model). Fix every `FAIL` using the `->` hint; a `WARN` on an optional service means
    that part of the demo is unavailable.
