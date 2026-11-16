@@ -1,0 +1,25 @@
+# Retrieval over HRUM documentation (course P3/P4: dense e5 + lexical BM25 + RRF + optional cross-encoder rerank)
+# Explicit list, not docs/*.md: developer docs (progress report, lessons learned, setup guide, technical deep dive)
+# are not knowledge for a CHRO, and some quote example names. This is the set the evals ran against.
+sources:
+  - docs/kb/*.md
+  - docs/data_dictionary.md
+  - docs/governance.md
+  - docs/architecture.md
+  - docs/demo_script.md
+  - warehouse/semantic/metrics.yaml      # rendered as one chunk per metric (single source of truth)
+index_dir: data/index
+chunk_max_chars: 1400
+embedding:
+  model: ${RAG_EMBED_MODEL:-intfloat/multilingual-e5-small}   # GPU: intfloat/multilingual-e5-large-instruct
+  query_prefix: "query: "                                       # e5-large-instruct: "Instruct: Given an HR question, retrieve relevant documentation\nQuery: "
+  passage_prefix: "passage: "
+  device: ${RAG_DEVICE:-auto}
+reranker:
+  enabled: ${RAG_RERANK:-false}                                  # true on the 4090
+  model: BAAI/bge-reranker-v2-m3
+retrieval:
+  candidates_per_retriever: 12
+  min_lexical_score: 1.0          # BM25 hits below this are noise words only (see docs/lessons_learned.md)
+  rrf_k: 60
+  top_k: 4

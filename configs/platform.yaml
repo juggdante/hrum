@@ -1,0 +1,13 @@
+platform: duckdb
+db_path: ${HRUM_DB_PATH:-data/hrum.duckdb}
+schemas:
+  raw: raw          # loaded as-is (all VARCHAR) + _loaded_at, _source_file
+  staging: stg      # cleaning only (dbt)
+  mart: mart        # business logic; the ONLY schema the agent can read
+sources:
+  sf_comp:
+    # Socrata dataset id 88g8-5mnd (data.sfgov.org). Verify the URL before first run.
+    dataset_id: 88g8-5mnd
+    csv_url: https://data.sfgov.org/api/views/88g8-5mnd/rows.csv?accessType=DOWNLOAD
+    license: PDDL 1.0
+    raw_table: sf_employee_compensation

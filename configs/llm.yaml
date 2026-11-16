@@ -1,0 +1,46 @@
+# Provider routing. Agent code must only talk to agent/llm/base.py (get_client()).
+# Model ids verified on Hugging Face (2026-11-11): Qwen/Qwen3.5-4B, Qwen/Qwen3.5-9B.
+default: ${LLM_PROVIDER:-qwen_local}
+
+providers:
+  qwen_local:                       # baseline: Qwen3.5-4B served by vLLM on the local RTX 4090
+    kind: openai_compatible
+    base_url: ${QWEN_BASE_URL:-http://127.0.0.1:8000/v1}
+    api_key: ${QWEN_API_KEY:-change-me}
+    model: ${QWEN_MODEL:-qwen}
+    serve_profile: qwen35_4b
+    temperature: 0.0
+    enable_thinking: false
+  qwen_candidate:                   # candidate: Qwen3.5-9B (FP8), compared to baseline with McNemar
+    kind: openai_compatible
+    base_url: ${QWEN_BASE_URL:-http://127.0.0.1:8000/v1}
+    api_key: ${QWEN_API_KEY:-change-me}
+    model: ${QWEN_MODEL:-qwen}
+    serve_profile: qwen35_9b_fp8
+    temperature: 0.0
+    enable_thinking: false
+  anthropic:                        # optional cloud comparison; check current model ids before use
+    kind: anthropic
+    model: claude-sonnet-5-5
+    temperature: 0.0
+  openai:
+    kind: openai
+    model: gpt-4.1                  # check current model ids before use
+    temperature: 0.0
+
+# vLLM launch profiles (infra/local_server/vllm_server.py). One model on the GPU at a time.
+serve_profiles:
+  qwen35_4b:                        # RTX 4090 24 GB
+    hf_model: Qwen/Qwen3.5-4B
+    args: [--dtype, bfloat16, --max-model-len, "32768", --max-num-seqs, "16",
+           --gpu-memory-utilization, "0.80"]
+  qwen35_9b_fp8:                    # RTX 4090 24 GB, on-the-fly FP8 weights (Ada supports FP8)
+    hf_model: Qwen/Qwen3.5-9B
+    args: [--quantization, fp8, --max-model-len, "16384", --max-num-seqs, "8",
+           --gpu-memory-utilization, "0.85"]
+  qwen35_4b_t4:                     # Colab T4 fallback (flags from course lab P10)
+    hf_model: Qwen/Qwen3.5-4B
+    args: [--dtype, half, --max-model-len, "16384", --max-num-seqs, "8",
+           --gpu-memory-utilization, "0.85"]
+  common_args: [--enable-auto-tool-choice, --tool-call-parser, qwen3_coder,
+                --reasoning-parser, qwen3, --limit-mm-per-prompt, '{"image":0,"video":0}']

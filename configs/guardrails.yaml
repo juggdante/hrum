@@ -1,0 +1,18 @@
+sql:
+  read_only: true
+  allowed_schemas: [mart]             # agent never touches raw/stg
+  max_rows: 1000
+  explore_max_rows: 5000             # SQL Explorer page (human analyst, row-level allowed)
+  timeout_seconds: 20
+privacy:
+  min_group_size: 5                   # suppress aggregates with fewer than N records
+  block_individual_lookup: true
+  blocked_columns: [employee_key, compensation_record_id]   # person-level keys never leave the warehouse
+  masked_columns: [employee_name]     # PII: raw/staging only, hashed in marts
+agent:
+  max_steps: 6
+  max_tool_calls: 12
+  max_seconds: 120
+roles:
+  chro:      {can_see: [aggregate, model_insight], individual: false}
+  analyst:   {can_see: [aggregate, model_insight, mart_detail], individual: false}
