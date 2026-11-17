@@ -89,3 +89,18 @@ def test_names_never_reach_exported_spans(scripted, spans):
     answer_question("Berapa gaji Stephen Lee di FY2026?", llm)
     exported = json.dumps([dict(s.attributes) for s in spans()], default=str)
     assert "Stephen" not in exported and "[NAME]" in exported
+
+
+def test_unreachable_langfuse_turns_tracing_off_once(monkeypatch):
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-x")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-x")
+    monkeypatch.setenv("LANGFUSE_HOST", "http://127.0.0.1:9")          # nothing listens here
+    monkeypatch.setenv("HRUM_TRACING", "on")
+    tracing.set_client(None)
+    tracing._default_client.cache_clear()
+    try:
+        assert tracing.client() is None and not tracing.enabled()
+        assert "not reachable" in (tracing.disabled_reason or "")
+    finally:
+        tracing._default_client.cache_clear()
+        tracing.disabled_reason = None

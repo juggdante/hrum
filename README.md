@@ -65,7 +65,7 @@ Attrition model (XGBoost + SHAP, aggregated) ───────────�
 ## Quick start
 **Full walkthrough from `git clone` to a working chat: [docs/setup_guide.md](docs/setup_guide.md).** Running a live demo (terminals, ports, `make demo-check`, fallbacks): [docs/demo_runbook.md](docs/demo_runbook.md). `make doctor` checks every step and prints the next command.
 
-Requires Python >= 3.10 and [uv](https://docs.astral.sh/uv/). The data steps run on CPU.
+Requires Python >= 3.11 and [uv](https://docs.astral.sh/uv/). The data steps run on CPU. Dependency versions are pinned in `uv.lock`.
 
 ```bash
 cp .env.example .env            # set QWEN_API_KEY (any random string); HRUM_JWT_SECRET for MCP
@@ -131,7 +131,7 @@ questions; otherwise the smaller, cheaper model stays.
 - [x] Eval results: Qwen3.5-4B and 9B both 39/39; release gate keeps 4B
 - [x] Langfuse tracing with PII masking (self-hosted on the GPU PC)
 - [x] Streamlit app (chat with evidence charts, question bank, dataset guide, SQL Explorer), deck
-- [ ] Repository published, LinkedIn post
+- [x] Repository published, LinkedIn post, deck exports (`docs/deck/HRUM_deck.pdf`, `.pptx`)
 
 ## Roadmap
 Each item ships only after it passes the eval release gate (`make eval`, `make gate`).

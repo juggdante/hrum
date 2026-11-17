@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import duckdb
 import mlflow
@@ -65,7 +65,7 @@ def main() -> None:
     REGISTRY.mkdir(parents=True, exist_ok=True)
     model.save_model(REGISTRY / "model.json")
     card = {
-        "name": "hrum-attrition-xgb", "trained_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "name": "hrum-attrition-xgb", "trained_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "is_synthetic": True,
         "warning": "Trained on SYNTHETIC termination labels: demonstrates the method; drivers mirror the "
                    "generator rules in docs/data_dictionary.md and are not findings about SF employees.",
