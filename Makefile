@@ -1,5 +1,5 @@
 export MLFLOW_DISABLE_AGENT_HINT=1
-.PHONY: index setup ingest synth dbt-run dbt-test build-data train serve agent mcp eval regrade failures gate trace-check doctor demo-check test lint
+.PHONY: index setup lock-upgrade ingest synth dbt-run dbt-test build-data train serve agent mcp eval regrade failures gate trace-check doctor demo-check test lint
 PY := .venv/bin/python
 # `make setup QUIET=` shows uv's full install output
 QUIET ?= -q
@@ -8,9 +8,12 @@ APP_PORT ?= 8501
 DB_PATH := $(abspath $(or $(HRUM_DB_PATH),data/hrum.duckdb))
 DBT := cd warehouse && DBT_PROFILES_DIR=. HRUM_DB_PATH=$(DB_PATH) ../.venv/bin/dbt
 
-setup:        ## create venv if missing + install/update deps (safe to re-run) (CPU side; vLLM has its own venv, see infra/local_server)
-	test -d .venv || uv venv $(QUIET) .venv
-	uv pip install $(QUIET) --python .venv/bin/python -e ".[dev,ml,rag,agent]"
+EXTRAS := --extra dev --extra ml --extra rag --extra agent
+setup:        ## .venv with the exact versions in uv.lock (safe to re-run; vLLM has its own venv, see infra/local_server)
+	uv sync $(QUIET) --locked $(EXTRAS)
+lock-upgrade: ## upgrade every dependency in uv.lock, then: make setup && make test (and make eval on the GPU) before committing
+	uv lock --upgrade
+	uv sync $(QUIET) --locked $(EXTRAS)
 ingest:       ## SF Employee Compensation -> DuckDB raw (set SF_COMP_CSV to reuse a local file)
 	$(PY) -m ingestion.sources.sf_comp
 synth:        ## synthetic HRIS layer -> DuckDB raw (builds staging first; needs `make ingest`)

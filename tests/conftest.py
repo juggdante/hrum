@@ -1,6 +1,12 @@
 from __future__ import annotations
 
 import json
+import os
+
+# Tests never send traces to a real Langfuse, even when the machine's .env has keys (the GPU PC does).
+# HRUM's own switch, not LANGFUSE_TRACING_ENABLED: the SDK reads that one too and would also disable the
+# in-memory client the tracing tests inject (tracing.set_client).
+os.environ["HRUM_TRACING"] = "off"
 from typing import Any
 
 import pytest

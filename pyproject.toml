@@ -2,7 +2,7 @@
 name = "hrum"
 version = "0.1.0"
 description = "HRUM - HR Unified Monitoring & Intelligence"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
   "pandas", "pyarrow", "numpy", "requests", "pyyaml", "python-dotenv",
   "duckdb>=1.1",
@@ -14,7 +14,7 @@ dependencies = [
 
 [project.optional-dependencies]
 ml = ["scikit-learn", "xgboost", "shap", "mlflow"]
-rag = ["sentence-transformers"]
+rag = ["sentence-transformers", "torch"]   # torch listed so the CPU source below applies
 agent = ["mcp==2.3.0", "pyjwt[crypto]", "langfuse", "streamlit", "plotly", "anthropic"]
 bigquery = ["google-cloud-bigquery", "db-dtypes", "dbt-bigquery"]
 dev = ["pytest", "ruff"]
@@ -32,3 +32,13 @@ line-length = 100
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# The app only needs torch for the small embedding model (CPU is enough); the GPU belongs to vLLM, which has its
+# own venv and its own CUDA torch. The CPU build keeps installs small and identical on the laptop and the GPU PC.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]

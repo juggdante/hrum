@@ -69,3 +69,27 @@ def test_demo_mode_fails_when_app_port_is_taken_by_another_program(monkeypatch):
         assert app.status == doctor.FAIL and "not a healthy Streamlit" in app.detail
     finally:
         srv.shutdown()
+
+
+def test_parse_listeners_keeps_only_lines_with_a_visible_pid():
+    text = ('LISTEN 0 2048 0.0.0.0:8501 0.0.0.0:* users:(("streamlit",pid=633027,fd=6))\n'
+            'LISTEN 0 2048 127.0.0.1:8502 0.0.0.0:* users:(("streamlit",pid=700001,fd=6))\n'
+            'LISTEN 0 4096 127.0.0.1:631 0.0.0.0:*\n')
+    assert doctor.parse_listeners(text) == {8501: [633027], 8502: [700001]}
+
+
+@pytest.mark.parametrize("explicit,env_port,detected,expected", [
+    (8503, "8502", [8504], (8503, "--app-port")),
+    (None, "8502", [8504], (8502, "APP_PORT in .env")),
+    (None, "", [8504], (8504, "detected HRUM process")),
+    (None, "", [], (8501, "default")),
+])
+def test_resolve_app_port_priority(explicit, env_port, detected, expected):
+    assert doctor.resolve_app_port(explicit, env_port, detected) == expected
+
+
+def test_this_test_process_is_not_the_hrum_app():
+    import os
+
+    assert doctor.is_hrum_app(os.getpid()) is False
+    assert doctor.is_hrum_app(999_999_999) is False        # no such process
