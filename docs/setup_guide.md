@@ -24,7 +24,7 @@ Steps 3-7 also work on a laptop without a GPU (use `make doctor ARGS=--cpu` ther
 ## 1. Prerequisites
 - Linux with an NVIDIA GPU; `nvidia-smi` must work. The default profiles are tuned for 24 GB (RTX 4090). With
   less memory, lower `--gpu-memory-utilization` and `--max-model-len` in `configs/llm.yaml`.
-- Python 3.10 or newer, `git`, and [uv](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
+- Python 3.11 or newer, `git`, and [uv](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`).
 - Free disk: about 30 GB for the 4B model only, about 50 GB with the 9B candidate (model weights, two
   virtualenvs, data).
 - Docker with the compose plugin, only for self-hosted Langfuse (step 10).
@@ -44,9 +44,11 @@ Values are read from `.env` by the programs themselves. Do not `export` them in 
 
 ## 3. App environment
 ```bash
-make setup                 # creates .venv and installs the app (QUIET= shows the full install log)
+make setup                 # creates .venv with the exact versions in uv.lock (QUIET= shows the install log)
 ```
-Expected: no output on success. `make doctor` then reports `app packages: all installed`.
+Expected: no output on success. Versions come from `uv.lock`, so you get exactly what the tests and evals ran with.
+The app installs the CPU build of PyTorch (only the small embedding model uses it); the GPU is left to vLLM,
+which has its own environment (step 8). `make doctor` then reports `app packages: all installed`.
 
 ## 4. Data warehouse (DuckDB + dbt)
 ```bash

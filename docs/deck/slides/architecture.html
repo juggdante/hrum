@@ -1,0 +1,41 @@
+<section id="architecture" data-transition="fade" style="background:#F7F6F2;color:#14213D;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#2A78D6">Architecture</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1">Everything runs on one GPU PC</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:28px;border-radius:16px;border:1px solid #E2E0D8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">Governed data</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">DuckDB + dbt marts, 16 metrics in one semantic layer</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:28px;border-radius:16px;border:1px solid #E2E0D8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">HR knowledge</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">RAG: BM25 + multilingual e5, fused with RRF</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:28px;border-radius:16px;border:1px solid #E2E0D8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">Attrition model</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">XGBoost + SHAP, published only as aggregates</p>
+</div>
+</div>
+<div style="display:flex;justify-content:center"><x-shape kind="arrow-down" style="background:#2A78D6;width:32px;height:36px"></x-shape></div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#14213D;color:#F7F6F2;padding:32px;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Agent: Qwen3.5-4B on vLLM (RTX 4090, 24 GB)</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9D3E3">Tool calling with step and time budgets · SQL guard · numeric grounding with one repair round · abstain when unsure</p>
+</div>
+<div style="display:flex;justify-content:center"><x-shape kind="arrow-down" style="background:#2A78D6;width:32px;height:36px"></x-shape></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px">
+<div style="display:flex;flex-direction:column;gap:8px;background:#E8F0FB;padding:28px;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">Streamlit app</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Chat with charts, question bank, SQL Explorer</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#E8F0FB;padding:28px;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">MCP gateway</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">JWT roles, tool pinning, audit log</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#E8F0FB;padding:28px;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">Langfuse</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Self-hosted traces, names masked</p>
+</div>
+</div>
+<aside>Nothing leaves the building: the model is served by vLLM on a local RTX 4090, the warehouse is a DuckDB file, and the tracing stack is self-hosted with Docker. Three sources feed the agent: the governed semantic layer for numbers, a hybrid retriever over HR documentation for definitions and policy, and an attrition model whose output is aggregated before the agent can see it. The same tools are exposed to the Streamlit app and, through an MCP gateway with role-scoped tokens, to any MCP client.</aside>
+</section>

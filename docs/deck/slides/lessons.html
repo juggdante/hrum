@@ -1,0 +1,27 @@
+<section id="lessons" data-transition="fade" style="background:#1C5CAB;color:#F7F6F2;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#CDE2FB">What I learned</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1">Put the guarantees in code, then measure</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:32px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Evals beat demos</h3>
+<p style="font-size:24px;line-height:1.5;color:#E3ECF8">Four agent bugs and one grader bug surfaced in eval runs; none showed up when trying questions by hand.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Smaller can be the right model</h3>
+<p style="font-size:24px;line-height:1.5;color:#E3ECF8">Same accuracy, faster median: a release gate keeps the 4B model until a bigger one proves a gain.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">A seed is not reproducibility</h3>
+<p style="font-size:24px;line-height:1.5;color:#E3ECF8">Unordered query results sent the same random draws to different employees on two machines.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Prompts guide, code guarantees</h3>
+<p style="font-size:24px;line-height:1.5;color:#E3ECF8">Grounding, the SQL guard, masking and charts hold even when the model ignores an instruction.</p>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.5;color:#F7F6F2"><b>Next, each behind the release gate:</b> multi-turn follow-ups, a larger eval set from real questions, retrieval experiments (e5-large, reranker).</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#CDE2FB">Code: [repository link] · Built in the Senior AI Engineering Series by rubythalib.ai</p>
+<aside>Patterns from the course labs are re-implemented here for the HR domain: vLLM serving, agentic RAG with grounding, the MCP gateway, the eval release gate and observability. The repository includes a setup guide and a make doctor command, so anyone with a GPU PC can rebuild the whole stack from a clone. Thank you to Ruby Abdullah and the rubythalib.ai team.</aside>
+</section>

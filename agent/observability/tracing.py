@@ -109,6 +109,7 @@ def mask(data: Any = None, **_: Any) -> Any:
 # ------------------------------------------------------------------ client
 
 _override: Any = None   # tests inject a client wired to an in-memory exporter
+disabled_reason: str | None = None   # set when keys are configured but tracing had to be turned off
 
 
 def set_client(client: Any) -> None:
@@ -122,6 +123,8 @@ def _default_client() -> Any:
         return None
     if os.environ.get("LANGFUSE_TRACING_ENABLED", "true").lower() in ("0", "false", "no"):
         return None
+    if os.environ.get("HRUM_TRACING", "on").lower() in ("0", "off", "false", "no"):   # set by the test suite
+        return None
     try:
         from langfuse import Langfuse
     except ImportError:
@@ -129,8 +132,27 @@ def _default_client() -> Any:
         return None
     from agent.prompts import PROMPT_VERSION
 
+    host = base_url() or "https://cloud.langfuse.com"
+    if not langfuse_reachable(host):
+        # One warning instead of a retry storm on every span export; the answers do not depend on tracing.
+        global disabled_reason
+        disabled_reason = f"Langfuse at {host} is not reachable"
+        log.warning("tracing: %s; tracing off for this run (start it, or empty LANGFUSE_* in .env)", disabled_reason)
+        return None
     return Langfuse(base_url=base_url(), mask=mask,
                     environment=os.environ.get("HRUM_ENV", "local"), release=f"prompt-{PROMPT_VERSION}")
+
+
+def langfuse_reachable(host: str, timeout: float = 2.0) -> bool:
+    """Cheap health probe before creating the client (GET /api/public/health)."""
+    import urllib.error
+    import urllib.request
+
+    try:
+        with urllib.request.urlopen(f"{host.rstrip('/')}/api/public/health", timeout=timeout) as r:
+            return r.status == 200
+    except (urllib.error.URLError, OSError, ValueError):
+        return False
 
 
 def base_url() -> str | None:

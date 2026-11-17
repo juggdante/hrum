@@ -1,0 +1,37 @@
+<section id="loop" data-transition="fade" style="background:#F7F6F2;color:#14213D;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;justify-content:space-between;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#2A78D6">The agent loop</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1">From question to a checked answer</h2>
+</div>
+<div style="display:flex;align-items:center;gap:16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:28px;border-radius:16px;border:1px solid #E2E0D8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">1 · Plan</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Qwen picks tools within a step budget</p>
+</div>
+<x-shape kind="arrow-right" style="background:#2A78D6;width:40px;height:24px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:28px;border-radius:16px;border:1px solid #E2E0D8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">2 · Tools</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Each result becomes evidence E1, E2…</p>
+</div>
+<x-shape kind="arrow-right" style="background:#2A78D6;width:40px;height:24px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#FFFFFF;padding:28px;border-radius:16px;border:1px solid #E2E0D8">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">3 · Finalize</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">JSON answer, each claim cites evidence</p>
+</div>
+<x-shape kind="arrow-right" style="background:#2A78D6;width:40px;height:24px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#14213D;color:#F7F6F2;padding:28px;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">4 · Ground</h3>
+<p style="font-size:24px;line-height:1.4;color:#C9D3E3">Numbers checked; repair or abstain</p>
+</div>
+<x-shape kind="arrow-right" style="background:#2A78D6;width:40px;height:24px"></x-shape>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#E8F0FB;padding:28px;border-radius:16px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:28px;font-weight:700">5 · Show</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Answer, chart, caveats, SQL</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#FFFFFF;padding:32px;border-radius:16px;border-left:6px solid #2A78D6">
+<p style="font-size:24px;font-weight:600;color:#2A78D6">First run on the real model</p>
+<p style="font-size:28px;line-height:1.5">“Berapa total kompensasi FY2026 dan headcount-nya?” → <b>query_metric</b> → “$7,523,952,094.89 with headcount 42,925”, both claims cite E1 · grounding ok, no repair · 3 LLM calls · 3.9 s</p>
+</div>
+<aside>The loop is adapted from the course’s agentic RAG lab. Budgets cap steps, tool calls and seconds. Tools tolerate small-model mistakes, such as a list sent as a string. If the model stops without calling any tool, the agent searches the docs itself, a safety net added after the eval found models skipping retrieval.</aside>
+</section>

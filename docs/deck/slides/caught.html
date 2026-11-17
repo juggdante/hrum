@@ -1,0 +1,15 @@
+<section id="caught" data-transition="fade" style="background:#F7F6F2;color:#14213D;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#2A78D6">36 → 39 of 39</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1">What the evals caught that a demo would not</h2>
+</div>
+<table style="font-size:24px;color:#14213D">
+<tr style="background:#14213D"><th style="width:30%;color:#F7F6F2;text-align:left">Symptom</th><th style="width:38%;color:#F7F6F2;text-align:left">Root cause</th><th style="width:32%;color:#F7F6F2;text-align:left">Fix</th></tr>
+<tr style="background:#FFFFFF"><td>Correct SQL result, then “not enough evidence”</td><td>Model wrote 42.930 (Indonesian thousands); the checker read 42.93</td><td>Accept both readings of ambiguous numbers</td></tr>
+<tr style="background:#F0EEE7"><td>Docs question answered “no evidence”</td><td>For an Indonesian query, BM25 noise words outvoted the dense retriever in RRF</td><td>BM25 votes only above a minimum score</td></tr>
+<tr style="background:#FFFFFF"><td>“Why” question, no tool called</td><td>Small models sometimes skip retrieval</td><td>Search the docs when no tool ran</td></tr>
+<tr style="background:#F0EEE7"><td>Out-of-scope question “refused”</td><td>Abstain vs refuse was never defined</td><td>Prompt v3 defines both</td></tr>
+<tr style="background:#FFFFFF"><td>A compliant answer failed</td><td>Grader bug: it ignored the SYNTHETIC caveat the system adds</td><td>Grade what the user sees; re-grade without the GPU</td></tr>
+</table>
+<aside>Run one with the 4B model scored 37 of 39, run two with both models 36 of 39, run three 39 of 39. None of these failures showed up when I tried the demo questions by hand. The last row is a reminder that graders have bugs too: the fix was to grade everything the user sees, and to make saved runs re-gradable so a grader fix never needs another GPU run.</aside>
+</section>

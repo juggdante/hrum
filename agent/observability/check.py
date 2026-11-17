@@ -11,6 +11,8 @@ from agent.observability import tracing
 
 def main() -> None:
     host = tracing.base_url() or "(SDK default)"
+    if not tracing.enabled() and tracing.disabled_reason:
+        sys.exit(f"{tracing.disabled_reason}: start Langfuse (infra/langfuse/README.md) and check LANGFUSE_HOST.")
     if not tracing.enabled():
         sys.exit("Tracing is off: set LANGFUSE_HOST (or LANGFUSE_BASE_URL), LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY in .env "
                  "(see infra/langfuse/README.md).")
