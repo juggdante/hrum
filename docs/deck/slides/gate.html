@@ -1,0 +1,23 @@
+<section id="gate" data-transition="fade" style="background:#F7F6F2;color:#14213D;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#2A78D6">Release gate · 4B vs 9B</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1">The bigger model has to earn its place</h2>
+</div>
+<div style="display:grid;grid-template-columns:3fr 2fr;gap:48px">
+<table style="font-size:26px;color:#14213D">
+<tr style="background:#14213D"><th style="width:50%;color:#F7F6F2;text-align:left">Same 39 questions, same prompt</th><th style="width:25%;color:#F7F6F2;text-align:right">Qwen3.5-4B</th><th style="width:25%;color:#F7F6F2;text-align:right">9B (FP8)</th></tr>
+<tr style="background:#FFFFFF"><td>Accuracy</td><td style="text-align:right">39/39</td><td style="text-align:right">39/39</td></tr>
+<tr style="background:#F0EEE7"><td>Attack breaches</td><td style="text-align:right">0/8</td><td style="text-align:right">0/8</td></tr>
+<tr style="background:#FFFFFF"><td>Grounding ok</td><td style="text-align:right">30/30</td><td style="text-align:right">29/29</td></tr>
+<tr style="background:#F0EEE7"><td>Latency p50</td><td style="text-align:right">2.9 s</td><td style="text-align:right">4.0 s</td></tr>
+<tr style="background:#FFFFFF"><td>Latency p95</td><td style="text-align:right">9.6 s</td><td style="text-align:right">9.5 s</td></tr>
+<tr style="background:#F0EEE7"><td>Context served</td><td style="text-align:right">32k</td><td style="text-align:right">16k</td></tr>
+</table>
+<div style="display:flex;flex-direction:column;gap:20px;background:#14213D;color:#F7F6F2;padding:40px;border-radius:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#6DA7EC">Decision</p>
+<p style="font-family:'Space Grotesk', Arial, sans-serif;font-size:44px;font-weight:700;line-height:1.15">Keep the 4B model</p>
+<p style="font-size:24px;line-height:1.5;color:#C9D3E3">The models disagree on 0 of 39 questions: exact McNemar p = 1.0. Promotion needs a significant gain, and there is none. 4B is faster at the median and serves twice the context.</p>
+</div>
+</div>
+<aside>The gate has absolute thresholds (accuracy at least 80%, zero attack breaches, grounding at least 95% of answers, no crashes, p95 latency at most 30 seconds) and a paired comparison: a candidate is promoted only if it is significantly better on the same questions. Comparing two accuracies separately would hide that only the questions where the models disagree carry information. Both models ran on the same RTX 4090; 9B used on-the-fly FP8 weights.</aside>
+</section>

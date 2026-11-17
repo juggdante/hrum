@@ -11,6 +11,13 @@ First-time installation is in [setup_guide.md](setup_guide.md); this page assume
 | Langfuse (tracing) | `cd ~/langfuse && docker compose up -d` | 3000 | optional | no: Docker runs it in the background |
 | MCP server | `make mcp` | 8765 | optional | **yes** |
 
+**Langfuse, first time only.** The first `docker compose up -d` downloads the images and migrates the databases, so
+port 3000 can take a few minutes to appear (`docker compose logs -f langfuse-web` until it is ready). Once it is up,
+open http://localhost:3000, sign up, create a project `hrum`, then Settings → API Keys → Create, and put
+`LANGFUSE_HOST=http://127.0.0.1:3000`, `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` in `hrum/.env` on the GPU PC.
+Check with `make trace-check`. Details: [infra/langfuse/README.md](../infra/langfuse/README.md), steps 2–3. Later
+starts reuse the same account, project and keys.
+
 All of them listen on the GPU PC only (`127.0.0.1`). From the laptop, forward ports in VS Code (Ports tab) or
 with `ssh -L`. If the app port is taken by someone else, use another one (`APP_PORT=8503`) everywhere below.
 
@@ -18,6 +25,15 @@ with `ssh -L`. If the app port is taken by someone else, use another one (`APP_P
 terminal or a dropped SSH session. It stops only with `vllm_server stop`, a reboot or a crash. While it runs it
 holds about 80% of the GPU memory (`--gpu-memory-utilization 0.80`) even when idle, so on a shared PC stop it after
 the demo (see the last section).
+
+**Shared PC: `make serve` and `vllm_server stop` stop every vLLM of your user account**, not only HRUM's. The
+launcher uses `pkill -f 'vllm serve'` (and kills `VLLM::EngineCore` processes), so on an account shared with
+colleagues their vLLM server stops too. Check first, and do not run either command if a vLLM that is not yours is
+running:
+```bash
+ps -eo pid,user,lstart,cmd | grep "[v]llm serve"     # who started which vLLM, and when
+nvidia-smi                                            # GPU memory per process
+```
 
 ## Is it running? Checking services and ports
 ```bash
@@ -90,6 +106,7 @@ Optional Terminal 4: `make mcp` (only if you show an MCP client).
 | SSH dropped | Services survive; restart the app if it was not in tmux | |
 
 ## After the demo
+Check that the vLLM you stop is yours (see the shared-PC warning above), then:
 ```bash
 .venv/bin/python -m infra.local_server.vllm_server stop     # free the GPU
 cd ~/langfuse && docker compose stop                        # data stays in the Docker volumes

@@ -1,0 +1,32 @@
+<section id="observability" data-transition="fade" style="background:#14213D;color:#F7F6F2;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#6DA7EC">Observability</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1">Every answer is traced, no name ever is</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#1F2D4D;padding:36px;border-radius:16px">
+<p style="font-size:24px;color:#C9D3E3">Trace of “Berapa gaji <b style="color:#F7F6F2">[NAME]</b> di FY2026?”</p>
+<p style="font-size:26px;line-height:1.5">answer · agent · 2.28 s</p>
+<p style="font-size:26px;line-height:1.5;color:#C9D3E3">└ step_0 · 1,953 tokens · 0.89 s</p>
+<p style="font-size:26px;line-height:1.5;color:#C9D3E3">└ tool:search_docs · 0.01 s</p>
+<p style="font-size:26px;line-height:1.5;color:#C9D3E3">└ finalize · 1,483 tokens · 1.38 s</p>
+<p style="font-size:26px;line-height:1.5;color:#C9D3E3">└ grounding · ok</p>
+<p style="font-size:24px;line-height:1.5;color:#6DA7EC">status: abstain · no person’s pay shown</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Self-hosted Langfuse</h3>
+<p style="font-size:24px;line-height:1.5;color:#C9D3E3">Docker next to vLLM, every port bound to the PC itself</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Masked before export</h3>
+<p style="font-size:24px;line-height:1.5;color:#C9D3E3">Names, e-mails, phones, ids and hashed keys, in every span</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<h3 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:32px;font-weight:700">Traces found a slow start</h3>
+<p style="font-size:24px;line-height:1.5;color:#C9D3E3">The first docs question took 14.8 s, about 10 s of it loading the embedding model; now loaded at start-up</p>
+</div>
+</div>
+</div>
+<aside>Adapted from the course’s observability lab. The name rule works on a vocabulary check: the warehouse holds no names, so a capitalised phrase containing a word unknown to HRUM’s own data, docs and prompts becomes [NAME]. One lesson from building it: the vocabulary first included developer docs that quote an example name, which put that name on the allowlist; a test now guards against it.</aside>
+</section>

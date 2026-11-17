@@ -1,0 +1,18 @@
+<section id="app" data-transition="fade" style="background:#F7F6F2;color:#14213D;font-family:'Inter', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:32px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:#2A78D6">The app</p>
+<h2 style="font-family:'Space Grotesk', Arial, sans-serif;font-size:64px;font-weight:700;line-height:1.1">What the CHRO sees</h2>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<img src="/_blob/c2b8a9aa9c3d352008c7206e4e1ed01f" alt="HRUM chat answering total compensation per fiscal year FY2022 to FY2026 with a line chart, caveats and the SQL that ran" style="width:812px;height:420px;object-fit:contain;background:#1A1A19;border-radius:16px">
+<p style="font-size:24px;line-height:1.4;color:#4A5568"><b style="color:#14213D">Chat.</b> The answer, a chart drawn from the cited rows, caveats, and the SQL behind it.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<img src="/_blob/476874c9cfe0266d2c7e44a9c07f6d59" alt="SQL Explorer page: SELECT star rewritten to exclude person keys, 20 pay records shown with a CSV download" style="width:812px;height:420px;object-fit:contain;background:#1A1A19;border-radius:16px">
+<p style="font-size:24px;line-height:1.4;color:#4A5568"><b style="color:#14213D">SQL Explorer (analysts).</b> Row-level reads; SELECT * is rewritten so person keys never show.</p>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Also: a question bank with the 39 verified questions (one click to ask) and a dataset guide built from live warehouse statistics.</p>
+<aside>Four pages in one Streamlit app. Charts are chosen by code from the shape of the evidence: a single number becomes KPI tiles, a year series a line, one category a sorted bar, two categories a heatmap. The model never draws a chart, so a chart cannot disagree with the grounded text. The SQL Explorer appears only for the analyst role.</aside>
+</section>
